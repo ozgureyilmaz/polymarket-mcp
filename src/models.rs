@@ -11,9 +11,9 @@ pub struct Market {
     pub closed: bool,
 
     // Polymarket returns these as strings, we'll parse them
-    #[serde(deserialize_with = "deserialize_string_to_f64")]
+    #[serde(deserialize_with = "deserialize_string_to_f64_or_default", default)]
     pub liquidity: f64,
-    #[serde(deserialize_with = "deserialize_string_to_f64")]
+    #[serde(deserialize_with = "deserialize_string_to_f64_or_default", default)]
     pub volume: f64,
 
     #[serde(rename = "endDate")]
@@ -65,7 +65,11 @@ pub struct Market {
     pub accepting_orders: Option<bool>,
     #[serde(rename = "acceptingOrderTimestamp", default)]
     pub accepting_order_timestamp: Option<String>,
-    #[serde(rename = "clobTokenIds", default)]
+    #[serde(
+        rename = "clobTokenIds",
+        default,
+        deserialize_with = "deserialize_optional_json_string_to_vec"
+    )]
     pub clob_token_ids: Option<Vec<String>>,
     #[serde(rename = "fpmm", default)]
     pub fpmm: Option<String>,
@@ -433,12 +437,59 @@ where
     s.parse::<f64>().map_err(serde::de::Error::custom)
 }
 
+/// Deserialize string to f64, with default of 0.0 for missing/invalid values
+fn deserialize_string_to_f64_or_default<'de, D>(deserializer: D) -> Result<f64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde_json::Value;
+    match Option::<Value>::deserialize(deserializer) {
+        Ok(Some(Value::String(s))) => Ok(s.parse::<f64>().unwrap_or(0.0)),
+        Ok(Some(Value::Number(n))) => Ok(n.as_f64().unwrap_or(0.0)),
+        _ => Ok(0.0),
+    }
+}
+
 fn deserialize_json_string_to_vec<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
 where
     D: Deserializer<'de>,
 {
     let s: String = Deserialize::deserialize(deserializer)?;
     serde_json::from_str(&s).map_err(serde::de::Error::custom)
+}
+
+/// Deserialize optional JSON-encoded string arrays (e.g., "[\"id1\", \"id2\"]" -> Some(vec!["id1", "id2"]))
+/// Handles missing fields, null values, and JSON-encoded string arrays
+fn deserialize_optional_json_string_to_vec<'de, D>(
+    deserializer: D,
+) -> Result<Option<Vec<String>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde_json::Value;
+    match Option::<Value>::deserialize(deserializer) {
+        Ok(Some(Value::String(s))) => {
+            // It's a JSON-encoded string like "[\"id1\", \"id2\"]"
+            serde_json::from_str(&s)
+                .map(Some)
+                .map_err(serde::de::Error::custom)
+        }
+        Ok(Some(Value::Array(arr))) => {
+            // It's already an array - convert elements to strings
+            let strings: Vec<String> = arr
+                .into_iter()
+                .map(|v| match v {
+                    Value::String(s) => s,
+                    other => other.to_string().trim_matches('"').to_string(),
+                })
+                .collect();
+            Ok(Some(strings))
+        }
+        Ok(Some(Value::Null)) => Ok(None),
+        Ok(None) => Ok(None),
+        Err(_) => Ok(None), // If field is missing, return None
+        _ => Ok(None),
+    }
 }
 
 fn deserialize_optional_string_or_number_to_f64<'de, D>(

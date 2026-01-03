@@ -1,9 +1,12 @@
+mod cli;
 mod config;
 mod error;
 mod models;
 mod polymarket_client;
 
 use anyhow::Result;
+use clap::Parser;
+use cli::{Cli, Commands, OutputFormat, format_output};
 use config::Config;
 use models::*;
 use polymarket_client::PolymarketClient;
@@ -291,69 +294,110 @@ impl PolymarketMcpServer {
     }
 }
 
-use clap::{Arg, Command};
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader as AsyncBufReader};
 use tokio::signal;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Parse command line arguments
-    let matches = Command::new("polymarket-mcp")
-        .version(env!("CARGO_PKG_VERSION"))
-        .about("Polymarket Model Context Protocol Server")
-        .arg(
-            Arg::new("config")
-                .short('c')
-                .long("config")
-                .value_name("FILE")
-                .help("Configuration file path"),
-        )
-        .arg(
-            Arg::new("log-level")
-                .short('l')
-                .long("log-level")
-                .value_name("LEVEL")
-                .help("Log level (trace, debug, info, warn, error)")
-                .default_value("info"),
-        )
-        .arg(
-            Arg::new("port")
-                .short('p')
-                .long("port")
-                .value_name("PORT")
-                .help("Port to listen on (for TCP mode)")
-                .value_parser(clap::value_parser!(u16)),
-        )
-        .get_matches();
+    // Parse CLI arguments using clap derive
+    let cli = Cli::parse();
 
     // Load environment variables from .env file if it exists
     dotenv::dotenv().ok();
 
     // Load configuration with optional config file override
     let mut config = Config::load()?;
-    if let Some(config_path) = matches.get_one::<String>("config") {
+    if let Some(config_path) = &cli.config {
         config = Config::load_from_file(config_path)?;
     }
 
-    // Override log level if specified
-    if let Some(log_level) = matches.get_one::<String>("log-level") {
-        config.logging.level = log_level.clone();
-    }
+    // Override log level
+    config.logging.level = cli.log_level.clone();
 
     // Initialize tracing subscriber to write to stderr only
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&config.logging.level));
 
-    // Write logs to stderr to avoid interfering with MCP JSON protocol on stdout
+    // Write logs to stderr to avoid interfering with output
     FmtSubscriber::builder()
         .with_env_filter(env_filter)
         .with_writer(std::io::stderr)
         .compact()
         .init();
 
-    // Create the MCP server handler with configuration
+    // Create the server
     let server = Arc::new(PolymarketMcpServer::with_config(config)?);
 
+    // Handle CLI commands or run as MCP server
+    match cli.command {
+        // No command = run as MCP server (default behavior)
+        None | Some(Commands::Serve { port: _ }) => {
+            run_mcp_server(server).await
+        }
+
+        // CLI commands
+        Some(Commands::Markets { limit }) => {
+            let result = server.get_active_markets(Some(limit)).await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+
+        Some(Commands::Market { market_id }) => {
+            let result = server.get_market_details(market_id).await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+
+        Some(Commands::Search { keyword, limit }) => {
+            let result = server.search_markets(keyword, Some(limit)).await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+
+        Some(Commands::Prices { market_id }) => {
+            let result = server.get_market_prices(market_id).await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+
+        Some(Commands::Trending { limit }) => {
+            let result = server.get_trending_markets(Some(limit)).await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+
+        Some(Commands::Resources) => {
+            let result = server.list_resources().await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+
+        Some(Commands::Resource { uri }) => {
+            let result = server.read_resource(&uri).await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+
+        Some(Commands::Prompts) => {
+            let result = server.list_prompts().await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+
+        Some(Commands::Prompt { name, args }) => {
+            let arguments = args
+                .map(|s| serde_json::from_str(&s))
+                .transpose()
+                .map_err(|e| anyhow::anyhow!("Invalid JSON arguments: {}", e))?;
+            let result = server.get_prompt(&name, arguments).await?;
+            println!("{}", format_output(&result, cli.output));
+            Ok(())
+        }
+    }
+}
+
+/// Run the MCP server in stdio mode
+async fn run_mcp_server(server: Arc<PolymarketMcpServer>) -> Result<()> {
     // Set up graceful shutdown handling
     let shutdown_signal = async {
         signal::ctrl_c()
