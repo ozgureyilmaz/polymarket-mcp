@@ -230,10 +230,7 @@ pub struct Trade {
     pub size: Option<f64>,
     #[serde(default)]
     pub price: Option<f64>,
-    #[serde(
-        default,
-        deserialize_with = "deserialize_optional_timestamp"
-    )]
+    #[serde(default, deserialize_with = "deserialize_optional_timestamp")]
     pub timestamp: Option<i64>,
     #[serde(alias = "proxyWallet", default)]
     pub proxy_wallet: Option<String>,
