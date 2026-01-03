@@ -178,16 +178,31 @@ pub struct EventResponse {
     pub next_cursor: Option<String>,
 }
 
+/// User position in a market from the CLOB API
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Position {
-    pub id: String,
-    pub market_id: String,
-    pub user_address: String,
-    pub outcome_id: String,
-    pub shares: f64,
-    pub value: f64,
-    pub cost_basis: f64,
-    pub unrealized_pnl: f64,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(alias = "market", default)]
+    pub market_id: Option<String>,
+    #[serde(alias = "user", default)]
+    pub user_address: Option<String>,
+    #[serde(alias = "outcome", alias = "token_id", default)]
+    pub outcome_id: Option<String>,
+    #[serde(alias = "size", default)]
+    pub shares: Option<f64>,
+    #[serde(default)]
+    pub value: Option<f64>,
+    #[serde(alias = "avgPrice", default)]
+    pub avg_price: Option<f64>,
+    #[serde(default)]
+    pub cost_basis: Option<f64>,
+    #[serde(alias = "pnl", default)]
+    pub unrealized_pnl: Option<f64>,
+    #[serde(alias = "asset", default)]
+    pub asset: Option<String>,
+    #[serde(alias = "side", default)]
+    pub side: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -196,16 +211,29 @@ pub struct PositionsResponse {
     pub next_cursor: Option<String>,
 }
 
+/// Trade from the CLOB API
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Trade {
-    pub id: String,
-    pub market_id: String,
-    pub outcome_id: String,
-    pub side: String, // "buy" or "sell"
-    pub size: f64,
-    pub price: f64,
-    pub timestamp: String,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(alias = "market", default)]
+    pub market_id: Option<String>,
+    #[serde(alias = "outcome", alias = "token_id", default)]
+    pub outcome_id: Option<String>,
+    #[serde(default)]
+    pub side: Option<String>,
+    #[serde(default)]
+    pub size: Option<f64>,
+    #[serde(default)]
+    pub price: Option<f64>,
+    #[serde(alias = "time", alias = "created_at", default)]
+    pub timestamp: Option<String>,
+    #[serde(alias = "trader", alias = "user", default)]
     pub trader_address: Option<String>,
+    #[serde(alias = "status", default)]
+    pub status: Option<String>,
+    #[serde(alias = "fee", default)]
+    pub fee: Option<f64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
