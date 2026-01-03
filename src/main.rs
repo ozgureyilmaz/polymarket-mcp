@@ -6,7 +6,7 @@ mod polymarket_client;
 
 use anyhow::Result;
 use clap::Parser;
-use cli::{Cli, Commands, OutputFormat, format_output};
+use cli::{format_output, Cli, Commands, OutputFormat};
 use config::Config;
 use models::*;
 use polymarket_client::PolymarketClient;
@@ -366,9 +366,7 @@ async fn main() -> Result<()> {
         Some(Commands::Resource { uri }) => {
             execute_and_print(|| server.read_resource(&uri), cli.output).await
         }
-        Some(Commands::Prompts) => {
-            execute_and_print(|| server.list_prompts(), cli.output).await
-        }
+        Some(Commands::Prompts) => execute_and_print(|| server.list_prompts(), cli.output).await,
         Some(Commands::Prompt { name, args }) => {
             let arguments = args
                 .map(|s| serde_json::from_str(&s))
