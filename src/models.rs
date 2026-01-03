@@ -1,3 +1,6 @@
+// Allow unused code - some models are defined for future use
+#![allow(dead_code)]
+
 use serde::{Deserialize, Deserializer, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
