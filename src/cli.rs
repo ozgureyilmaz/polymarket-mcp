@@ -103,11 +103,11 @@ pub enum Commands {
 pub fn format_output(value: &Value, format: OutputFormat) -> String {
     match format {
         OutputFormat::Json => serde_json::to_string(value).unwrap_or_else(|e| {
-            eprintln!("[ERROR] Failed to serialize output to JSON: {}", e);
+            eprintln!("[ERROR] Failed to serialize output to JSON: {e}");
             String::new()
         }),
         OutputFormat::Pretty => serde_json::to_string_pretty(value).unwrap_or_else(|e| {
-            eprintln!("[ERROR] Failed to serialize output to pretty JSON: {}", e);
+            eprintln!("[ERROR] Failed to serialize output to pretty JSON: {e}");
             String::new()
         }),
         OutputFormat::Table => format_as_table(value),
@@ -131,7 +131,7 @@ fn format_volume(market: &Value) -> String {
     market
         .get("volume")
         .and_then(|v| v.as_f64())
-        .map(|v| format!("${:.0}", v))
+        .map(|v| format!("${v:.0}"))
         .unwrap_or_else(|| "N/A".to_string())
 }
 
@@ -167,12 +167,12 @@ fn format_as_table(value: &Value) -> String {
         }
 
         if let Some(count) = value.get("count").and_then(|c| c.as_u64()) {
-            output.push_str(&format!("\nTotal: {} markets\n", count));
+            output.push_str(&format!("\nTotal: {count} markets\n"));
         }
     } else {
         // Fallback to pretty JSON for non-market data
         output = serde_json::to_string_pretty(value).unwrap_or_else(|e| {
-            eprintln!("[ERROR] Failed to serialize output to pretty JSON: {}", e);
+            eprintln!("[ERROR] Failed to serialize output to pretty JSON: {e}");
             String::new()
         });
     }

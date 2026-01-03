@@ -127,7 +127,7 @@ impl Config {
     /// - The config contains invalid values
     pub fn load_from_file(config_path: &str) -> Result<Self> {
         if !Path::new(config_path).exists() {
-            return Err(anyhow::anyhow!("Config file not found: {}", config_path));
+            return Err(anyhow::anyhow!("Config file not found: {config_path}"));
         }
 
         let builder = ConfigBuilder::builder()

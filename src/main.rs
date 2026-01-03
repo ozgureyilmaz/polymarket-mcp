@@ -140,7 +140,7 @@ impl PolymarketMcpServer {
                 serde_json::to_string_pretty(&market)?
             }
             _ => {
-                return Err(anyhow::anyhow!("Unknown resource URI: {}", uri));
+                return Err(anyhow::anyhow!("Unknown resource URI: {uri}"));
             }
         };
 
@@ -286,7 +286,7 @@ impl PolymarketMcpServer {
                 ]
             }
             _ => {
-                return Err(anyhow::anyhow!("Unknown prompt: {}", name));
+                return Err(anyhow::anyhow!("Unknown prompt: {name}"));
             }
         };
 
@@ -371,7 +371,7 @@ async fn main() -> Result<()> {
             let arguments = args
                 .map(|s| serde_json::from_str(&s))
                 .transpose()
-                .map_err(|e| anyhow::anyhow!("Invalid JSON arguments: {}", e))?;
+                .map_err(|e| anyhow::anyhow!("Invalid JSON arguments: {e}"))?;
             execute_and_print(|| server.get_prompt(&name, arguments), cli.output).await
         }
     }

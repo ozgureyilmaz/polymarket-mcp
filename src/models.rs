@@ -429,13 +429,6 @@ impl ResourceCache {
 }
 
 // Custom deserializers for Polymarket API format
-fn deserialize_string_to_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let s: String = Deserialize::deserialize(deserializer)?;
-    s.parse::<f64>().map_err(serde::de::Error::custom)
-}
 
 /// Deserialize string to f64, with default of 0.0 for missing/invalid values
 fn deserialize_string_to_f64_or_default<'de, D>(deserializer: D) -> Result<f64, D::Error>
@@ -481,8 +474,7 @@ where
                 .map(|v| match v {
                     Value::String(s) => Ok(s),
                     other => Err(serde::de::Error::custom(format!(
-                        "Expected a string in array, but found: {}",
-                        other
+                        "Expected a string in array, but found: {other}"
                     ))),
                 })
                 .collect();
