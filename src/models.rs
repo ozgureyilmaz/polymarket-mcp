@@ -211,29 +211,44 @@ pub struct PositionsResponse {
     pub next_cursor: Option<String>,
 }
 
-/// Trade from the CLOB API
+/// Trade from the Polymarket Data API
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Trade {
     #[serde(default)]
     pub id: Option<String>,
-    #[serde(alias = "market", default)]
-    pub market_id: Option<String>,
-    #[serde(alias = "outcome", alias = "token_id", default)]
-    pub outcome_id: Option<String>,
+    #[serde(alias = "conditionId", default)]
+    pub condition_id: Option<String>,
+    #[serde(alias = "asset", default)]
+    pub asset: Option<String>,
+    #[serde(default)]
+    pub outcome: Option<String>,
+    #[serde(alias = "outcomeIndex", default)]
+    pub outcome_index: Option<u32>,
     #[serde(default)]
     pub side: Option<String>,
     #[serde(default)]
     pub size: Option<f64>,
     #[serde(default)]
     pub price: Option<f64>,
-    #[serde(alias = "time", alias = "created_at", default)]
-    pub timestamp: Option<String>,
-    #[serde(alias = "trader", alias = "user", default)]
-    pub trader_address: Option<String>,
-    #[serde(alias = "status", default)]
-    pub status: Option<String>,
-    #[serde(alias = "fee", default)]
-    pub fee: Option<f64>,
+    #[serde(
+        default,
+        deserialize_with = "deserialize_optional_timestamp"
+    )]
+    pub timestamp: Option<i64>,
+    #[serde(alias = "proxyWallet", default)]
+    pub proxy_wallet: Option<String>,
+    #[serde(default)]
+    pub title: Option<String>,
+    #[serde(default)]
+    pub slug: Option<String>,
+    #[serde(alias = "eventSlug", default)]
+    pub event_slug: Option<String>,
+    #[serde(alias = "transactionHash", default)]
+    pub transaction_hash: Option<String>,
+    #[serde(default)]
+    pub name: Option<String>,
+    #[serde(default)]
+    pub pseudonym: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -530,6 +545,19 @@ where
         Ok(Some(_)) => Err(serde::de::Error::custom("Expected string or number")),
         Ok(None) => Ok(None),
         Err(_) => Ok(None), // If field is missing, return None
+    }
+}
+
+/// Deserialize timestamp that can be either integer or string
+fn deserialize_optional_timestamp<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde_json::Value;
+    match Option::<Value>::deserialize(deserializer) {
+        Ok(Some(Value::Number(n))) => Ok(n.as_i64()),
+        Ok(Some(Value::String(s))) => s.parse::<i64>().map(Some).map_err(serde::de::Error::custom),
+        _ => Ok(None),
     }
 }
 
