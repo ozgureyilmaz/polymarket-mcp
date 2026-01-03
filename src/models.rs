@@ -511,9 +511,7 @@ where
                 .collect();
             Ok(Some(strings?))
         }
-        Ok(Some(Value::Null)) => Ok(None),
-        Ok(None) => Ok(None),
-        Err(_) => Ok(None), // If field is missing, return None
+        // Handles null, deserialization errors, and other unexpected JSON value types
         _ => Ok(None),
     }
 }
