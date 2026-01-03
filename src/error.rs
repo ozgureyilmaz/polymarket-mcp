@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use tracing::error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestId(pub String);
