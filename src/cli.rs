@@ -35,12 +35,8 @@ pub enum OutputFormat {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Run as MCP server (default behavior)
-    Serve {
-        /// Port for TCP mode (optional, uses stdio by default)
-        #[arg(short, long)]
-        port: Option<u16>,
-    },
+    /// Run as MCP server (stdio mode, default behavior)
+    Serve,
 
     /// Get list of active prediction markets
     #[command(alias = "list")]
@@ -106,8 +102,14 @@ pub enum Commands {
 /// Format output based on the selected format
 pub fn format_output(value: &Value, format: OutputFormat) -> String {
     match format {
-        OutputFormat::Json => serde_json::to_string(value).unwrap_or_default(),
-        OutputFormat::Pretty => serde_json::to_string_pretty(value).unwrap_or_default(),
+        OutputFormat::Json => serde_json::to_string(value).unwrap_or_else(|e| {
+            eprintln!("[ERROR] Failed to serialize output to JSON: {}", e);
+            String::new()
+        }),
+        OutputFormat::Pretty => serde_json::to_string_pretty(value).unwrap_or_else(|e| {
+            eprintln!("[ERROR] Failed to serialize output to pretty JSON: {}", e);
+            String::new()
+        }),
         OutputFormat::Table => format_as_table(value),
     }
 }
@@ -159,7 +161,10 @@ fn format_as_table(value: &Value) -> String {
         }
     } else {
         // Fallback to pretty JSON for non-market data
-        output = serde_json::to_string_pretty(value).unwrap_or_default();
+        output = serde_json::to_string_pretty(value).unwrap_or_else(|e| {
+            eprintln!("[ERROR] Failed to serialize output to pretty JSON: {}", e);
+            String::new()
+        });
     }
 
     output

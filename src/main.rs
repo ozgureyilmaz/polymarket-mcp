@@ -328,70 +328,53 @@ async fn main() -> Result<()> {
     // Create the server
     let server = Arc::new(PolymarketMcpServer::with_config(config)?);
 
+    // Helper to execute a command and print formatted output
+    async fn execute_and_print<F, Fut>(f: F, output_format: OutputFormat) -> Result<()>
+    where
+        F: FnOnce() -> Fut,
+        Fut: std::future::Future<Output = Result<Value>>,
+    {
+        let result = f().await?;
+        println!("{}", format_output(&result, output_format));
+        Ok(())
+    }
+
     // Handle CLI commands or run as MCP server
     match cli.command {
-        // No command = run as MCP server (default behavior)
-        None | Some(Commands::Serve { port: _ }) => {
-            run_mcp_server(server).await
-        }
+        // No command or explicit serve = run as MCP server (default behavior)
+        None | Some(Commands::Serve) => run_mcp_server(server).await,
 
-        // CLI commands
+        // CLI commands - use helper to reduce duplication
         Some(Commands::Markets { limit }) => {
-            let result = server.get_active_markets(Some(limit)).await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.get_active_markets(Some(limit)), cli.output).await
         }
-
         Some(Commands::Market { market_id }) => {
-            let result = server.get_market_details(market_id).await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.get_market_details(market_id), cli.output).await
         }
-
         Some(Commands::Search { keyword, limit }) => {
-            let result = server.search_markets(keyword, Some(limit)).await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.search_markets(keyword, Some(limit)), cli.output).await
         }
-
         Some(Commands::Prices { market_id }) => {
-            let result = server.get_market_prices(market_id).await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.get_market_prices(market_id), cli.output).await
         }
-
         Some(Commands::Trending { limit }) => {
-            let result = server.get_trending_markets(Some(limit)).await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.get_trending_markets(Some(limit)), cli.output).await
         }
-
         Some(Commands::Resources) => {
-            let result = server.list_resources().await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.list_resources(), cli.output).await
         }
-
         Some(Commands::Resource { uri }) => {
-            let result = server.read_resource(&uri).await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.read_resource(&uri), cli.output).await
         }
-
         Some(Commands::Prompts) => {
-            let result = server.list_prompts().await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.list_prompts(), cli.output).await
         }
-
         Some(Commands::Prompt { name, args }) => {
             let arguments = args
                 .map(|s| serde_json::from_str(&s))
                 .transpose()
                 .map_err(|e| anyhow::anyhow!("Invalid JSON arguments: {}", e))?;
-            let result = server.get_prompt(&name, arguments).await?;
-            println!("{}", format_output(&result, cli.output));
-            Ok(())
+            execute_and_print(|| server.get_prompt(&name, arguments), cli.output).await
         }
     }
 }

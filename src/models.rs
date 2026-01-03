@@ -475,15 +475,18 @@ where
                 .map_err(serde::de::Error::custom)
         }
         Ok(Some(Value::Array(arr))) => {
-            // It's already an array - convert elements to strings
-            let strings: Vec<String> = arr
+            // It's already an array - enforce all elements are strings
+            let strings: Result<Vec<String>, _> = arr
                 .into_iter()
                 .map(|v| match v {
-                    Value::String(s) => s,
-                    other => other.to_string().trim_matches('"').to_string(),
+                    Value::String(s) => Ok(s),
+                    other => Err(serde::de::Error::custom(format!(
+                        "Expected a string in array, but found: {}",
+                        other
+                    ))),
                 })
                 .collect();
-            Ok(Some(strings))
+            Ok(Some(strings?))
         }
         Ok(Some(Value::Null)) => Ok(None),
         Ok(None) => Ok(None),
