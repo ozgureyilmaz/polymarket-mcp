@@ -321,7 +321,7 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     // Load environment variables from .env file if it exists
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
 
     // Load configuration with optional config file override
     let mut config = Config::load()?;
