@@ -114,46 +114,56 @@ pub fn format_output(value: &Value, format: OutputFormat) -> String {
     }
 }
 
+/// Extract outcome price from market data at given index, formatted as percentage
+fn format_outcome_price(market: &Value, index: usize) -> String {
+    market
+        .get("outcome_prices")
+        .and_then(|p| p.as_array())
+        .and_then(|arr| arr.get(index))
+        .and_then(|p| p.as_str())
+        .and_then(|s| s.parse::<f64>().ok())
+        .map(|p| format!("{:.1}%", p * 100.0))
+        .unwrap_or_else(|| "N/A".to_string())
+}
+
+/// Extract and format volume from market data
+fn format_volume(market: &Value) -> String {
+    market
+        .get("volume")
+        .and_then(|v| v.as_f64())
+        .map(|v| format!("${:.0}", v))
+        .unwrap_or_else(|| "N/A".to_string())
+}
+
 /// Format JSON as a simple table (for markets list)
 fn format_as_table(value: &Value) -> String {
     let mut output = String::new();
 
     // Handle markets array
     if let Some(markets) = value.get("markets").and_then(|m| m.as_array()) {
-        output.push_str(&format!("{:<50} {:>8} {:>8} {:>12}\n", "Question", "YES", "NO", "Volume"));
+        output.push_str(&format!(
+            "{:<50} {:>8} {:>8} {:>12}\n",
+            "Question", "YES", "NO", "Volume"
+        ));
         output.push_str(&"-".repeat(82));
         output.push('\n');
 
         for market in markets {
-            let question = market.get("question")
+            let question = market
+                .get("question")
                 .and_then(|q| q.as_str())
                 .unwrap_or("Unknown")
                 .chars()
                 .take(48)
                 .collect::<String>();
 
-            let yes_price = market.get("outcome_prices")
-                .and_then(|p| p.as_array())
-                .and_then(|arr| arr.first())
-                .and_then(|p| p.as_str())
-                .and_then(|s| s.parse::<f64>().ok())
-                .map(|p| format!("{:.1}%", p * 100.0))
-                .unwrap_or_else(|| "N/A".to_string());
-
-            let no_price = market.get("outcome_prices")
-                .and_then(|p| p.as_array())
-                .and_then(|arr| arr.get(1))
-                .and_then(|p| p.as_str())
-                .and_then(|s| s.parse::<f64>().ok())
-                .map(|p| format!("{:.1}%", p * 100.0))
-                .unwrap_or_else(|| "N/A".to_string());
-
-            let volume = market.get("volume")
-                .and_then(|v| v.as_f64())
-                .map(|v| format!("${:.0}", v))
-                .unwrap_or_else(|| "N/A".to_string());
-
-            output.push_str(&format!("{:<50} {:>8} {:>8} {:>12}\n", question, yes_price, no_price, volume));
+            output.push_str(&format!(
+                "{:<50} {:>8} {:>8} {:>12}\n",
+                question,
+                format_outcome_price(market, 0),
+                format_outcome_price(market, 1),
+                format_volume(market)
+            ));
         }
 
         if let Some(count) = value.get("count").and_then(|c| c.as_u64()) {
