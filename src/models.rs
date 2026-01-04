@@ -273,7 +273,7 @@ impl Default for MarketsQueryParams {
         Self {
             limit: Some(20),
             offset: Some(0),
-            order: Some("liquidity".to_string()),
+            order: Some("volume24hr".to_string()),
             ascending: Some(false),
             active: Some(true),
             closed: None,

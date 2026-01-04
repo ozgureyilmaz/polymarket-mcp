@@ -129,6 +129,14 @@ fn test_market_query_params() {
         query_string.contains("active=true"),
         "Should contain active=true"
     );
+    assert!(
+        query_string.contains("order=volume24hr"),
+        "Should contain order=volume24hr"
+    );
+    assert!(
+        query_string.contains("ascending=false"),
+        "Should contain ascending=false"
+    );
 }
 
 #[test]

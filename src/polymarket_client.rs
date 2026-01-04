@@ -289,7 +289,7 @@ impl PolymarketClient {
     pub async fn get_trending_markets(&self, limit: Option<u32>) -> Result<Vec<Market>> {
         let params = MarketsQueryParams {
             limit: limit.or(Some(10)),
-            order: Some("volume".to_string()),
+            order: Some("volume24hr".to_string()),
             ascending: Some(false),
             active: Some(true),
             ..Default::default()
