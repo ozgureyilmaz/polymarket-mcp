@@ -20,7 +20,7 @@ pub struct Market {
     pub volume: f64,
 
     #[serde(rename = "endDate")]
-    pub end_date: String,
+    pub end_date: Option<String>,
 
     pub image: Option<String>,
     pub category: Option<String>,
