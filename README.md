@@ -9,8 +9,9 @@ A high-performance Model Context Protocol (MCP) server for Polymarket prediction
 ## Features
 
 - **🔄 Real-time Market Data**: Fetch active markets, trending markets, and detailed market information
-- **🔍 Advanced Search**: Search markets by keywords across questions, descriptions, and categories  
+- **🔍 Advanced Search**: Search markets by keywords across questions, descriptions, and categories
 - **💰 Price Information**: Get current yes/no prices and market statistics
+- **🎯 Dual Interface**: MCP protocol for AI integration (Claude Desktop) + CLI for terminal usage and scripting
 - **📊 MCP Resources**: Auto-refreshing market data resources with intelligent caching
 - **🤖 AI-Powered Prompts**: Market analysis, arbitrage detection, and trading insights
 - **⚡ High Performance**: Built-in caching, connection pooling, and optimized for speed
@@ -119,6 +120,12 @@ cargo install --git https://github.com/0x79de/polymarket-mcp
 
 The binary will be installed to `~/.cargo/bin/polymarket-mcp`.
 
+**Best for CLI Usage:**
+If you want to use polymarket-mcp as a command-line tool, Option 4 (`cargo install`) is recommended as it makes the binary accessible from anywhere.
+
+**Best for MCP Server:**
+Options 1-3 work well for MCP server usage with Claude Desktop. Remember to use absolute paths in your configuration.
+
 ## Configuration (Optional)
 
 The server works out-of-the-box with sensible defaults. No configuration is required for basic usage.
@@ -212,6 +219,72 @@ After installing and configuring the MCP server, you can interact with Polymarke
 3. **You get**: List of AI-related markets with prices and details
 4. **Follow up**: "Analyze the most liquid AI market"
 5. **Claude uses**: `analyze_market` prompt for deep insights
+
+## CLI Usage
+
+Polymarket-MCP provides a command-line interface for direct interaction with Polymarket markets.
+
+### Installation for CLI Access
+
+**Option A: Install to PATH (Recommended)**
+```bash
+cargo install --git https://github.com/0x79de/polymarket-mcp
+```
+Then use: `polymarket-mcp <command>`
+
+**Option B: Build and use local binary**
+```bash
+cargo build --release
+./target/release/polymarket-mcp <command>
+```
+
+### Quick Reference
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `markets` | List active markets | `polymarket-mcp markets --limit 10` |
+| `trending` | Get trending by volume | `polymarket-mcp trending --limit 5` |
+| `search <keyword>` | Search markets | `polymarket-mcp search "bitcoin"` |
+| `market <id>` | Get market details | `polymarket-mcp market 990538` |
+| `prices <id>` | Get current prices | `polymarket-mcp prices 990538` |
+
+### Output Formats
+
+Control output with `--output` or `-o`:
+- `json` - Compact JSON
+- `pretty` - Pretty-printed JSON (default)
+- `table` - Human-readable table
+
+**Examples:**
+```bash
+# Get top 5 trending markets as table
+polymarket-mcp --output table trending --limit 5
+
+# Search and get JSON output
+polymarket-mcp search "election" -o json
+
+# Get market details (pretty JSON)
+polymarket-mcp market 123456 --output pretty
+```
+
+### Global Options
+
+```
+-c, --config <FILE>      Configuration file path
+-l, --log-level <LEVEL>  Log level (default: info)
+-o, --output <FORMAT>    Output format (default: pretty)
+```
+
+### Why Full Paths in Claude Desktop?
+
+**For MCP server usage**, Claude Desktop requires absolute paths:
+```json
+"command": "/Users/yourname/.cargo/bin/polymarket-mcp"
+```
+
+**Reason:** MCP security model requires fully qualified binary paths. The daemon doesn't inherit your shell's PATH or expand `~` symbols.
+
+**For CLI usage**, if you use `cargo install`, the binary is on your PATH and you can use `polymarket-mcp` directly in terminal.
 
 ### Development & Testing
 

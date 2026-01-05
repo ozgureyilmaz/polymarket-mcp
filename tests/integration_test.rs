@@ -63,7 +63,7 @@ fn test_market_structure() {
         closed: false,
         liquidity: 1000.0,
         volume: 2000.0,
-        end_date: "2024-12-31T23:59:59Z".to_string(),
+        end_date: Some("2024-12-31T23:59:59Z".to_string()),
         image: None,
         category: Some("Test".to_string()),
         outcomes: vec!["Yes".to_string(), "No".to_string()],
@@ -128,6 +128,14 @@ fn test_market_query_params() {
     assert!(
         query_string.contains("active=true"),
         "Should contain active=true"
+    );
+    assert!(
+        query_string.contains("order=volume24hr"),
+        "Should contain order=volume24hr"
+    );
+    assert!(
+        query_string.contains("ascending=false"),
+        "Should contain ascending=false"
     );
 }
 
