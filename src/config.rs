@@ -26,6 +26,7 @@ pub struct ServerConfig {
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ApiConfig {
     pub base_url: String,
+    pub clob_url: String,
     pub api_key: Option<String>,
     pub timeout_seconds: u64,
     pub max_retries: u32,
@@ -37,6 +38,7 @@ impl std::fmt::Debug for ApiConfig {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ApiConfig")
             .field("base_url", &self.base_url)
+            .field("clob_url", &self.clob_url)
             .field("api_key", &self.api_key.as_ref().map(|_| "[REDACTED]"))
             .field("rate_limit_per_second", &self.rate_limit_per_second)
             .finish()
@@ -72,6 +74,7 @@ impl Default for Config {
             },
             api: ApiConfig {
                 base_url: "https://gamma-api.polymarket.com".to_string(),
+                clob_url: "https://data-api.polymarket.com".to_string(),
                 api_key: None,
                 timeout_seconds: 30,
                 max_retries: 3,
@@ -183,6 +186,9 @@ impl Config {
         // API configuration
         if let Ok(val) = env::var("POLYMARKET_API_BASE_URL") {
             config.api.base_url = val;
+        }
+        if let Ok(val) = env::var("POLYMARKET_CLOB_URL") {
+            config.api.clob_url = val;
         }
         if let Ok(val) = env::var("POLYMARKET_API_KEY") {
             config.api.api_key = Some(val);
