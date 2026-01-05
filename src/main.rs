@@ -82,6 +82,24 @@ impl PolymarketMcpServer {
         }))
     }
 
+    pub async fn get_positions(&self, wallet: String) -> Result<Value> {
+        let positions = self.client.get_user_positions(&wallet).await?;
+        Ok(json!({
+            "wallet": wallet,
+            "positions": positions,
+            "count": positions.len()
+        }))
+    }
+
+    pub async fn get_trades(&self, wallet: String, limit: Option<u32>) -> Result<Value> {
+        let trades = self.client.get_user_trades(&wallet, limit).await?;
+        Ok(json!({
+            "wallet": wallet,
+            "trades": trades,
+            "count": trades.len()
+        }))
+    }
+
     // MCP Resources Support
     pub async fn list_resources(&self) -> Result<Value> {
         let resources = vec![
@@ -303,7 +321,7 @@ async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     // Load environment variables from .env file if it exists
-    dotenv::dotenv().ok();
+    dotenvy::dotenv().ok();
 
     // Load configuration with optional config file override
     let mut config = Config::load()?;
@@ -373,6 +391,12 @@ async fn main() -> Result<()> {
                 .transpose()
                 .map_err(|e| anyhow::anyhow!("Invalid JSON arguments: {e}"))?;
             execute_and_print(|| server.get_prompt(&name, arguments), cli.output).await
+        }
+        Some(Commands::Positions { wallet }) => {
+            execute_and_print(|| server.get_positions(wallet), cli.output).await
+        }
+        Some(Commands::Trades { wallet, limit }) => {
+            execute_and_print(|| server.get_trades(wallet, Some(limit)), cli.output).await
         }
     }
 }

@@ -315,6 +315,47 @@ impl PolymarketClient {
 
         self.get_markets(Some(params)).await
     }
+
+    /// Gets positions for a specific wallet address.
+    ///
+    /// Uses the Polymarket Data API to fetch current positions.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The API request fails
+    /// - The response cannot be deserialized
+    pub async fn get_user_positions(&self, wallet_address: &str) -> Result<Vec<Position>> {
+        let url = format!(
+            "{}/positions?user={}",
+            self.config.api.clob_url, wallet_address
+        );
+        let response: Vec<Position> = self.make_request_with_retry(&url).await?;
+        Ok(response)
+    }
+
+    /// Gets trade history for a specific wallet address.
+    ///
+    /// Uses the Polymarket Data API to fetch trade history.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The API request fails
+    /// - The response cannot be deserialized
+    pub async fn get_user_trades(
+        &self,
+        wallet_address: &str,
+        limit: Option<u32>,
+    ) -> Result<Vec<Trade>> {
+        let limit = limit.unwrap_or(50);
+        let url = format!(
+            "{}/trades?user={}&limit={}",
+            self.config.api.clob_url, wallet_address, limit
+        );
+        let response: Vec<Trade> = self.make_request_with_retry(&url).await?;
+        Ok(response)
+    }
 }
 
 #[cfg(test)]

@@ -20,7 +20,7 @@ serde_json = "1.0"
 
 # Configuration and utilities
 config = "0.14"
-dotenv = "0.15"
+dotenvy = "0.15"  # Replaces unmaintained dotenv (RUSTSEC-2021-0141)
 clap = { version = "4.0", features = ["derive"] }
 fastrand = "2.0"
 
@@ -32,7 +32,10 @@ uuid = { version = "1.0", features = ["v4"] }
 
 # Logging
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }  # RUSTSEC-2025-0055 fix
+
+# Force updated transitive dependencies for security fixes
+slab = "0.4.11"  # RUSTSEC-2025-0047 fix
 
 [dev-dependencies]
 tokio-test = "0.4"

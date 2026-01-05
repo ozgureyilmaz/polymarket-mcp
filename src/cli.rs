@@ -97,6 +97,22 @@ pub enum Commands {
         #[arg(short, long)]
         args: Option<String>,
     },
+
+    /// Get positions for a wallet address
+    Positions {
+        /// Wallet address (0x...)
+        wallet: String,
+    },
+
+    /// Get trade history for a wallet address
+    Trades {
+        /// Wallet address (0x...)
+        wallet: String,
+
+        /// Maximum number of trades to return
+        #[arg(short, long, default_value = "50")]
+        limit: u32,
+    },
 }
 
 /// Format output based on the selected format
