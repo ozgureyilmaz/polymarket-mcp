@@ -22,10 +22,9 @@ jobs:
     steps:
       - name: Release Please
         id: release
-        uses: google-github-actions/release-please-action@v4
+        uses: googleapis/release-please-action@v4
         with:
           release-type: rust
-          package-name: polymarket-mcp
           token: ${{ secrets.GITHUB_TOKEN }}
 
   build:
