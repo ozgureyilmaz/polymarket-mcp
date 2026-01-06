@@ -2,6 +2,8 @@
 
 A high-performance Model Context Protocol (MCP) server for Polymarket prediction market data, built with Rust. This server provides real-time market data, prices, and betting information from Polymarket through MCP tools, resources, and prompts.
 
+**🎉 No API Key Required!** Works out of the box with Polymarket's public API.
+
 [![CI](https://github.com/0x79de/polymarket-mcp/workflows/CI/badge.svg)](https://github.com/0x79de/polymarket-mcp/actions)
 [![Release](https://img.shields.io/github/v/release/0x79de/polymarket-mcp)](https://github.com/0x79de/polymarket-mcp/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,9 +11,8 @@ A high-performance Model Context Protocol (MCP) server for Polymarket prediction
 ## Features
 
 - **🔄 Real-time Market Data**: Fetch active markets, trending markets, and detailed market information
-- **🔍 Advanced Search**: Search markets by keywords across questions, descriptions, and categories
+- **🔍 Advanced Search**: Search markets by keywords across questions, descriptions, and categories  
 - **💰 Price Information**: Get current yes/no prices and market statistics
-- **🎯 Dual Interface**: MCP protocol for AI integration (Claude Desktop) + CLI for terminal usage and scripting
 - **📊 MCP Resources**: Auto-refreshing market data resources with intelligent caching
 - **🤖 AI-Powered Prompts**: Market analysis, arbitrage detection, and trading insights
 - **⚡ High Performance**: Built-in caching, connection pooling, and optimized for speed
@@ -21,9 +22,10 @@ A high-performance Model Context Protocol (MCP) server for Polymarket prediction
 ## Quick Start
 
 ### Prerequisites
-- **Rust 1.70+** - Install via [rustup](https://rustup.rs/)
+- **Rust 1.70+** - Install via [rustup](https://rustup.rs/) (only for building from source)
 - **Claude Desktop** - Download from [Claude.ai](https://claude.ai/download)
-- **Internet Connection** - For Polymarket API access (no API key required)
+- **Internet Connection** - For Polymarket API access
+- **✅ No API Key Required!** - Works with public API
 
 ### Installation
 
@@ -120,38 +122,33 @@ cargo install --git https://github.com/0x79de/polymarket-mcp
 
 The binary will be installed to `~/.cargo/bin/polymarket-mcp`.
 
-**Best for CLI Usage:**
-If you want to use polymarket-mcp as a command-line tool, Option 4 (`cargo install`) is recommended as it makes the binary accessible from anywhere.
-
-**Best for MCP Server:**
-Options 1-3 work well for MCP server usage with Claude Desktop. Remember to use absolute paths in your configuration.
-
 ## Configuration (Optional)
 
-The server works out-of-the-box with sensible defaults. No configuration is required for basic usage.
+The server works out-of-the-box with sensible defaults. **No API key or configuration required** for basic usage.
 
 ### Environment Variables
 
-Create a `.env` file for custom configuration:
+Customize behavior with environment variables:
+
+### Environment Variables
 
 ```bash
 # API Configuration
-POLYMARKET_API_BASE_URL=https://gamma-api.polymarket.com
-# POLYMARKET_API_KEY=your_key_here  # Optional - not needed for public data
+POLYMARKET_API_BASE_URL=https://gamma-api.polymarket.com  # Default
 
 # Performance Settings
-POLYMARKET_CACHE_ENABLED=true
-POLYMARKET_CACHE_TTL=60              # Cache TTL in seconds
-POLYMARKET_RESOURCE_CACHE_TTL=300    # Resource cache TTL
+POLYMARKET_CACHE_ENABLED=true                             # Enable caching
+POLYMARKET_CACHE_TTL=60                                   # Cache TTL in seconds
+POLYMARKET_RESOURCE_CACHE_TTL=300                         # Resource cache TTL
 
 # Logging
-POLYMARKET_LOG_LEVEL=info            # trace, debug, info, warn, error
-RUST_LOG=info                        # Alternative log level setting
+POLYMARKET_LOG_LEVEL=info                                 # trace, debug, info, warn, error
+RUST_LOG=info                                             # Alternative log level setting
 
-# Advanced Settings (rarely needed)
-POLYMARKET_API_TIMEOUT=30            # API timeout in seconds
-POLYMARKET_API_MAX_RETRIES=3         # Retry attempts
-POLYMARKET_API_RETRY_DELAY=100       # Retry delay in ms
+# Advanced Settings
+POLYMARKET_API_TIMEOUT=30                                 # API timeout in seconds
+POLYMARKET_API_MAX_RETRIES=3                              # Retry attempts
+POLYMARKET_API_RETRY_DELAY=100                            # Retry delay in ms
 ```
 
 ### Configuration File
@@ -159,13 +156,8 @@ POLYMARKET_API_RETRY_DELAY=100       # Retry delay in ms
 Alternatively, copy `config.toml.example` to `config.toml` and customize:
 
 ```toml
-[server]
-name = "Polymarket MCP Server"
-timeout_seconds = 30
-
 [api]
 base_url = "https://gamma-api.polymarket.com"
-# api_key = "your_key_here"  # Optional
 timeout_seconds = 30
 max_retries = 3
 retry_delay_ms = 100
@@ -219,72 +211,6 @@ After installing and configuring the MCP server, you can interact with Polymarke
 3. **You get**: List of AI-related markets with prices and details
 4. **Follow up**: "Analyze the most liquid AI market"
 5. **Claude uses**: `analyze_market` prompt for deep insights
-
-## CLI Usage
-
-Polymarket-MCP provides a command-line interface for direct interaction with Polymarket markets.
-
-### Installation for CLI Access
-
-**Option A: Install to PATH (Recommended)**
-```bash
-cargo install --git https://github.com/0x79de/polymarket-mcp
-```
-Then use: `polymarket-mcp <command>`
-
-**Option B: Build and use local binary**
-```bash
-cargo build --release
-./target/release/polymarket-mcp <command>
-```
-
-### Quick Reference
-
-| Command | Description | Example |
-|---------|-------------|---------|
-| `markets` | List active markets | `polymarket-mcp markets --limit 10` |
-| `trending` | Get trending by volume | `polymarket-mcp trending --limit 5` |
-| `search <keyword>` | Search markets | `polymarket-mcp search "bitcoin"` |
-| `market <id>` | Get market details | `polymarket-mcp market 990538` |
-| `prices <id>` | Get current prices | `polymarket-mcp prices 990538` |
-
-### Output Formats
-
-Control output with `--output` or `-o`:
-- `json` - Compact JSON
-- `pretty` - Pretty-printed JSON (default)
-- `table` - Human-readable table
-
-**Examples:**
-```bash
-# Get top 5 trending markets as table
-polymarket-mcp --output table trending --limit 5
-
-# Search and get JSON output
-polymarket-mcp search "election" -o json
-
-# Get market details (pretty JSON)
-polymarket-mcp market 123456 --output pretty
-```
-
-### Global Options
-
-```
--c, --config <FILE>      Configuration file path
--l, --log-level <LEVEL>  Log level (default: info)
--o, --output <FORMAT>    Output format (default: pretty)
-```
-
-### Why Full Paths in Claude Desktop?
-
-**For MCP server usage**, Claude Desktop requires absolute paths:
-```json
-"command": "/Users/yourname/.cargo/bin/polymarket-mcp"
-```
-
-**Reason:** MCP security model requires fully qualified binary paths. The daemon doesn't inherit your shell's PATH or expand `~` symbols.
-
-**For CLI usage**, if you use `cargo install`, the binary is on your PATH and you can use `polymarket-mcp` directly in terminal.
 
 ### Development & Testing
 
@@ -517,27 +443,83 @@ WantedBy=multi-user.target
 
 ## Troubleshooting
 
+Having issues? We've got you covered!
+
+### Quick Diagnostics
+
+```bash
+# Test if binary works
+./target/release/polymarket-mcp --help
+
+# Test API access
+curl "https://gamma-api.polymarket.com/markets?limit=1"
+
+# Check Claude Desktop logs (macOS)
+tail -f ~/Library/Logs/Claude/mcp.log
+
+# Run with debug logging
+RUST_LOG=debug ./target/release/polymarket-mcp
+```
+
 ### Common Issues
 
 #### Server Won't Start
 **Check these steps:**
-1. Verify binary path: `ls -la /path/to/target/release/polymarket-mcp`
-2. Test binary: `./target/release/polymarket-mcp --help`
-3. Check configuration: `RUST_LOG=debug cargo run`
+1. Verify binary path is absolute: `which polymarket-mcp` or use full path
+2. Make binary executable: `chmod +x /path/to/polymarket-mcp`
+3. Test binary: `./target/release/polymarket-mcp --help`
+4. Check configuration: `RUST_LOG=debug cargo run`
 
 #### MCP Connection Issues
 **Troubleshooting:**
 1. Verify `claude_desktop_config.json` syntax is valid JSON
-2. Check absolute path to binary in configuration
-3. Restart Claude Desktop after configuration changes
+2. Use absolute path to binary in configuration
+3. Restart Claude Desktop completely (Cmd+Q, not just close)
 4. Check Claude Desktop logs: `~/Library/Logs/Claude/mcp.log` (macOS)
+
+#### Deserialization Errors
+**Error**: `Deserialization error: JSON parsing error...`
+
+**This was the main issue!** If you're getting this error:
+
+1. **Update to latest version**:
+   ```bash
+   cd /path/to/polymarket-mcp
+   git pull
+   cargo build --release
+   ```
+
+2. **The fix includes**:
+   - Flexible field parsing for all API response formats
+   - Better error messages showing actual API response
+   - Support for additional Polymarket API fields
+   - Robust handling of optional/missing fields
+
+3. **Enable debug logging** to see detailed errors:
+   ```bash
+   RUST_LOG=debug ./target/release/polymarket-mcp
+   ```
+
+4. **Still having issues?** Open an issue with the error message at:
+   https://github.com/0x79de/polymarket-mcp/issues
 
 #### API Errors
 **Common solutions:**
 - Verify internet connectivity
-- Check API endpoint availability
+- Check API endpoint availability: `curl https://gamma-api.polymarket.com/markets?limit=1`
 - Ensure no rate limiting (automatic handling built-in)
 - Review error logs with `RUST_LOG=debug`
+
+### Comprehensive Troubleshooting
+
+For detailed troubleshooting guides, see **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** which covers:
+- Installation issues
+- Claude Desktop integration
+- API connection problems
+- Deserialization errors
+- Performance issues
+- Build and compilation
+- Logging and debugging
 
 ### Debug Mode
 
@@ -609,12 +591,34 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/0x79de/polymarket-mcp/issues)
-- **Documentation**: [MCP Specification](https://modelcontextprotocol.io/docs)
-- **Polymarket API**: [Official Documentation](https://docs.polymarket.com)
+- **Troubleshooting**: [Troubleshooting Guide](TROUBLESHOOTING.md)
+- **Testing Guide**: [Testing with Claude Desktop](TESTING_GUIDE.md)
+- **MCP Documentation**: [MCP Specification](https://modelcontextprotocol.io/docs)
+- **Polymarket**: [polymarket.com](https://polymarket.com)
 
 ## Changelog
 
-### v0.3.0 (Current)
+### v0.3.2 (Current - fix/api-deserialization branch)
+
+- **✨ Simplified**: Removed API key requirement completely
+- **🧹 Cleaned**: Removed unnecessary code and documentation
+- **🐛 Fixed**: Deserialization errors with Polymarket API responses
+- **✨ Enhanced**: Flexible field parsing handles various API response formats
+- **✨ Added**: Support for all Polymarket Gamma API fields (50+ fields)
+- **✨ Added**: Better error logging with API response preview
+- **📚 Streamlined**: Consolidated documentation for clarity
+- **⚡ Optimized**: Applied clippy suggestions and removed dead code
+- **🧪 All Tests Passing**: 11/11 tests pass
+- **✅ Zero Warnings**: Clean compilation
+
+**Key improvements:**
+- No API key needed or supported - simpler setup
+- No more "expected array, got string" errors
+- Handles missing/optional fields gracefully
+- Better error messages for debugging
+- Works with latest Polymarket API
+
+### v0.3.0
 
 - **🎯 Zero Warnings**: Completely clean compilation with zero warnings
 - **📊 Full MCP Implementation**: 5 tools, 3 resources, 3 prompts
@@ -641,5 +645,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Archive
 
-- [Changelog](CHANGELOG.md)
 - [Release Process](RELEASE_PROCESS.md)
