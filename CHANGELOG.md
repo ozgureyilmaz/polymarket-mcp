@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/ozgureyilmaz/polymarket-mcp/compare/v0.2.0...v0.2.1) (2026-01-11)
+
+
+### Bug Fixes
+
+* CLI table output showing N/A for YES/NO prices ([9660556](https://github.com/ozgureyilmaz/polymarket-mcp/commit/966055688d5e5755f57af4aafe02ef75520f3700))
+* CLI table output showing N/A for YES/NO prices ([a1e9a44](https://github.com/ozgureyilmaz/polymarket-mcp/commit/a1e9a442f290a6f9d5c245497349c33f395ff7dc))
+
 ## [0.2.0](https://github.com/ozgureyilmaz/polymarket-mcp/compare/v0.1.0...v0.2.0) (2026-01-05)
 
 
