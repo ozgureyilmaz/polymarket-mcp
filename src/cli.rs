@@ -133,7 +133,7 @@ pub fn format_output(value: &Value, format: OutputFormat) -> String {
 /// Extract outcome price from market data at given index, formatted as percentage
 fn format_outcome_price(market: &Value, index: usize) -> String {
     market
-        .get("outcome_prices")
+        .get("outcomePrices")
         .and_then(|p| p.as_array())
         .and_then(|arr| arr.get(index))
         .and_then(|p| p.as_str())
