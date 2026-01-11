@@ -4,8 +4,8 @@
 
 mcp server and cli for polymarket. get real-time market data, prices, and search through claude desktop or terminal.
 
-[![CI](https://github.com/0x79de/polymarket-mcp/workflows/CI/badge.svg)](https://github.com/0x79de/polymarket-mcp/actions)
-[![Release](https://img.shields.io/github/v/release/0x79de/polymarket-mcp)](https://github.com/0x79de/polymarket-mcp/releases)
+[![CI](https://github.com/ozgureyilmaz/polymarket-mcp/workflows/CI/badge.svg)](https://github.com/ozgureyilmaz/polymarket-mcp/actions)
+[![Release](https://img.shields.io/github/v/release/ozgureyilmaz/polymarket-mcp)](https://github.com/ozgureyilmaz/polymarket-mcp/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ozgureyilmaz/polymarket-mcp)
 
